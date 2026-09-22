@@ -1,0 +1,1 @@
+{"name":"cobalt-premium-api","version":"3.3.0","private":true,"type":"module","scripts":{"start":"node src/server.js","dev":"node --watch src/server.js","doctor":"node scripts/doctor.js","test":"node --test --test-concurrency=1"},"engines":{"node":">=20"},"dependencies":{}}

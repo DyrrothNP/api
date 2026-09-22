@@ -1,0 +1,3249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#080a0f"
+  >
+
+  <meta
+    name="description"
+    content="vex downloader - Fast media inspection and downloading"
+  >
+
+  <title>vex downloader</title>
+
+  <style>
+    /* =========================================================
+       RESET
+    ========================================================= */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      color: #f7f8fb;
+      background:
+        radial-gradient(
+          circle at 10% 0%,
+          rgba(116, 91, 255, .20),
+          transparent 28%
+        ),
+        radial-gradient(
+          circle at 90% 10%,
+          rgba(0, 208, 255, .13),
+          transparent 25%
+        ),
+        #080a0f;
+
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    /* =========================================================
+       VARIABLES
+    ========================================================= */
+
+    :root {
+      --bg: #080a0f;
+      --panel: rgba(17, 20, 29, .76);
+      --panel-strong: #11141d;
+      --panel-soft: rgba(255,255,255,.045);
+
+      --text: #f7f8fb;
+      --muted: #949baa;
+      --border: rgba(255,255,255,.09);
+
+      --primary: #8b5cf6;
+      --primary-2: #6366f1;
+      --cyan: #22d3ee;
+
+      --success: #34d399;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+
+      --radius: 22px;
+      --radius-sm: 14px;
+
+      --shadow:
+        0 20px 70px rgba(0,0,0,.34);
+    }
+
+    body.light {
+      --bg: #f4f6fb;
+      --panel: rgba(255,255,255,.86);
+      --panel-strong: #ffffff;
+      --panel-soft: rgba(15,23,42,.04);
+
+      --text: #111827;
+      --muted: #667085;
+      --border: rgba(15,23,42,.10);
+
+      --shadow:
+        0 20px 60px rgba(15,23,42,.12);
+
+      background:
+        radial-gradient(
+          circle at 10% 0%,
+          rgba(139,92,246,.14),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 90% 10%,
+          rgba(34,211,238,.12),
+          transparent 30%
+        ),
+        #f4f6fb;
+    }
+
+    /* =========================================================
+       LAYOUT
+    ========================================================= */
+
+    .app {
+      width: min(1440px, 100%);
+      margin: auto;
+      padding:
+        18px
+        max(18px, env(safe-area-inset-right))
+        calc(90px + env(safe-area-inset-bottom))
+        max(18px, env(safe-area-inset-left));
+    }
+
+    .container {
+      width: min(1180px, 100%);
+      margin: auto;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+
+      background: color-mix(
+        in srgb,
+        var(--bg) 78%,
+        transparent
+      );
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      width: min(1180px, 100%);
+      margin: auto;
+
+      min-height: 68px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+
+      text-decoration: none;
+      min-width: 0;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary),
+          var(--cyan)
+        );
+
+      box-shadow:
+        0 8px 30px rgba(99,102,241,.32);
+
+      font-size: 20px;
+      flex: 0 0 auto;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 850;
+      letter-spacing: -.03em;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 1px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =========================================================
+       BUTTONS
+    ========================================================= */
+
+    .btn {
+      min-height: 42px;
+
+      border: 1px solid var(--border);
+      border-radius: 13px;
+
+      padding: 0 14px;
+
+      color: var(--text);
+      background: var(--panel-soft);
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      transition:
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(139,92,246,.45);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.primary {
+      border: 0;
+
+      color: white;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-2)
+        );
+
+      box-shadow:
+        0 12px 32px rgba(99,102,241,.25);
+    }
+
+    .btn.danger {
+      color: white;
+      background: rgba(244,63,94,.15);
+      border-color: rgba(244,63,94,.28);
+    }
+
+    .btn.small {
+      min-height: 36px;
+      padding: 0 11px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+
+    .hero {
+      padding:
+        58px 0 28px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+
+      padding: 7px 11px;
+
+      border-radius: 999px;
+
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+
+      color: #c4b5fd;
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .eyebrow-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 14px var(--success);
+    }
+
+    .hero h1 {
+      margin: 18px auto 12px;
+
+      max-width: 850px;
+
+      font-size:
+        clamp(34px, 7vw, 72px);
+
+      line-height: .98;
+
+      letter-spacing: -.065em;
+    }
+
+    .hero h1 span {
+      background:
+        linear-gradient(
+          110deg,
+          #fff,
+          #a78bfa 45%,
+          #67e8f9
+        );
+
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    body.light .hero h1 span {
+      background:
+        linear-gradient(
+          110deg,
+          #111827,
+          #6d28d9 45%,
+          #0891b2
+        );
+
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .hero p {
+      max-width: 660px;
+      margin: auto;
+
+      color: var(--muted);
+
+      font-size:
+        clamp(14px, 2vw, 17px);
+
+      line-height: 1.7;
+    }
+
+    /* =========================================================
+       URL BOX
+    ========================================================= */
+
+    .url-card {
+      position: relative;
+
+      padding: 10px;
+
+      border-radius: 20px;
+
+      border: 1px solid var(--border);
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(139,92,246,.10),
+          rgba(34,211,238,.05)
+        ),
+        var(--panel);
+
+      box-shadow: var(--shadow);
+
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+
+    .url-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .url-input {
+      width: 100%;
+      min-height: 54px;
+
+      padding: 0 17px;
+
+      border: 1px solid transparent;
+      border-radius: 14px;
+
+      outline: none;
+
+      color: var(--text);
+      background: var(--panel-soft);
+    }
+
+    .url-input:focus {
+      border-color: rgba(139,92,246,.5);
+      box-shadow: 0 0 0 4px rgba(139,92,246,.08);
+    }
+
+    .url-tools {
+      display: flex;
+      gap: 7px;
+    }
+
+    .url-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+
+      padding: 8px 7px 2px;
+
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       MAIN CONTENT
+    ========================================================= */
+
+    .workspace {
+      margin-top: 20px;
+
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+
+      background: var(--panel);
+
+      border-radius: var(--radius);
+
+      box-shadow: var(--shadow);
+
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+
+      overflow: hidden;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-header {
+      padding: 18px 20px;
+
+      border-bottom: 1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-weight: 800;
+      letter-spacing: -.025em;
+    }
+
+    .card-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    /* =========================================================
+       PREVIEW
+    ========================================================= */
+
+    .preview {
+      position: relative;
+
+      aspect-ratio: 16 / 9;
+
+      overflow: hidden;
+
+      background:
+        linear-gradient(
+          135deg,
+          #10131d,
+          #171b28
+        );
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-empty {
+      position: absolute;
+      inset: 0;
+
+      display: grid;
+      place-items: center;
+
+      text-align: center;
+      padding: 30px;
+
+      color: var(--muted);
+    }
+
+    .preview-icon {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .preview-gradient {
+      position: absolute;
+      inset: auto 0 0;
+
+      height: 45%;
+
+      background:
+        linear-gradient(
+          transparent,
+          rgba(0,0,0,.75)
+        );
+    }
+
+    .preview-info {
+      position: absolute;
+
+      left: 16px;
+      right: 16px;
+      bottom: 14px;
+
+      color: white;
+    }
+
+    .preview-title {
+      font-size: clamp(15px, 2vw, 20px);
+      font-weight: 800;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-channel {
+      margin-top: 4px;
+
+      color: rgba(255,255,255,.72);
+
+      font-size: 12px;
+    }
+
+    /* =========================================================
+       META
+    ========================================================= */
+
+    .meta-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 9px;
+
+      margin-top: 16px;
+    }
+
+    .meta-item {
+      min-width: 0;
+
+      padding: 12px;
+
+      border-radius: 13px;
+
+      background: var(--panel-soft);
+
+      border: 1px solid var(--border);
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .meta-value {
+      margin-top: 5px;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+       DESCRIPTION
+    ========================================================= */
+
+    .description {
+      margin-top: 14px;
+
+      max-height: 150px;
+      overflow: auto;
+
+      padding: 13px;
+
+      border-radius: 13px;
+
+      color: var(--muted);
+
+      background: var(--panel-soft);
+
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    /* =========================================================
+       DOWNLOAD OPTIONS
+    ========================================================= */
+
+    .options {
+      display: grid;
+      gap: 13px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--muted);
+
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    select {
+      width: 100%;
+      min-height: 47px;
+
+      padding: 0 13px;
+
+      border: 1px solid var(--border);
+      border-radius: 13px;
+
+      color: var(--text);
+      background: var(--panel-soft);
+
+      outline: none;
+    }
+
+    select:focus {
+      border-color: rgba(139,92,246,.55);
+    }
+
+    .download-button {
+      width: 100%;
+      min-height: 52px;
+
+      margin-top: 5px;
+
+      border: 0;
+      border-radius: 15px;
+
+      color: white;
+
+      font-weight: 800;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-2)
+        );
+
+      box-shadow:
+        0 14px 35px rgba(99,102,241,.27);
+    }
+
+    .download-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* =========================================================
+       PROGRESS
+    ========================================================= */
+
+    .progress-wrap {
+      margin-top: 18px;
+    }
+
+    .progress-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      font-size: 12px;
+    }
+
+    .progress-status {
+      color: var(--muted);
+    }
+
+    .progress-number {
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 9px;
+
+      margin-top: 8px;
+
+      border-radius: 99px;
+
+      overflow: hidden;
+
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+
+      border-radius: inherit;
+
+      background:
+        linear-gradient(
+          90deg,
+          var(--primary),
+          var(--cyan)
+        );
+
+      transition: width .25s ease;
+    }
+
+    /* =========================================================
+       COMPLETED DOWNLOAD
+    ========================================================= */
+
+    .completed {
+      display: none;
+
+      margin-top: 14px;
+
+      padding: 13px;
+
+      border-radius: 14px;
+
+      border: 1px solid rgba(52,211,153,.2);
+
+      background: rgba(52,211,153,.07);
+    }
+
+    .completed.show {
+      display: block;
+    }
+
+    .completed-title {
+      color: var(--success);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .completed-file {
+      margin-top: 4px;
+
+      color: var(--muted);
+
+      font-size: 11px;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+       FORMATS
+    ========================================================= */
+
+    .formats {
+      display: grid;
+      gap: 7px;
+
+      max-height: 280px;
+      overflow: auto;
+    }
+
+    .format-row {
+      display: grid;
+
+      grid-template-columns:
+        60px
+        65px
+        1fr
+        1fr;
+
+      gap: 7px;
+
+      align-items: center;
+
+      padding: 9px;
+
+      border-radius: 10px;
+
+      background: var(--panel-soft);
+
+      font-size: 10px;
+    }
+
+    .format-row strong {
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       HISTORY
+    ========================================================= */
+
+    .history {
+      margin-top: 18px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .history-item {
+      display: grid;
+
+      grid-template-columns: 58px 1fr auto;
+
+      gap: 10px;
+
+      align-items: center;
+
+      padding: 9px;
+
+      border-radius: 12px;
+
+      border: 1px solid var(--border);
+
+      background: var(--panel-soft);
+    }
+
+    .history-thumb {
+      width: 58px;
+      height: 42px;
+
+      object-fit: cover;
+
+      border-radius: 8px;
+
+      background: #111;
+    }
+
+    .history-title {
+      font-size: 12px;
+      font-weight: 700;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-time {
+      margin-top: 3px;
+
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    /* =========================================================
+       API STATUS
+    ========================================================= */
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: var(--warning);
+    }
+
+    .status-dot.online {
+      background: var(--success);
+      box-shadow: 0 0 12px var(--success);
+    }
+
+    .status-dot.offline {
+      background: var(--danger);
+    }
+
+    /* =========================================================
+       TOAST
+    ========================================================= */
+
+    .toast-container {
+      position: fixed;
+
+      right: 18px;
+      bottom: 18px;
+
+      z-index: 100;
+
+      display: grid;
+      gap: 8px;
+
+      width: min(360px, calc(100vw - 36px));
+    }
+
+    .toast {
+      padding: 13px 14px;
+
+      border-radius: 14px;
+
+      border: 1px solid var(--border);
+
+      background: var(--panel-strong);
+
+      box-shadow: var(--shadow);
+
+      font-size: 12px;
+
+      animation:
+        toast-in .22s ease;
+    }
+
+    @keyframes toast-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================================================
+       BOTTOM NAV
+    ========================================================= */
+
+    .mobile-nav {
+      display: none;
+    }
+
+    /* =========================================================
+       TABLET
+    ========================================================= */
+
+    @media screen and (max-width: 900px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 42px;
+      }
+    }
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media screen and (max-width: 620px) {
+      .app {
+        padding:
+          12px
+          12px
+          calc(82px + env(safe-area-inset-bottom));
+      }
+
+      .topbar-inner {
+        padding: 0 12px;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+
+      .top-actions .server-label {
+        display: none;
+      }
+
+      .hero {
+        padding:
+          36px 4px 22px;
+      }
+
+      .hero h1 {
+        font-size: 39px;
+      }
+
+      .hero p {
+        font-size: 13px;
+      }
+
+      .url-row {
+        grid-template-columns: 1fr;
+      }
+
+      .url-tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .url-tools .btn {
+        width: 100%;
+      }
+
+      .card-body {
+        padding: 15px;
+      }
+
+      .card-header {
+        padding: 15px;
+      }
+
+      .meta-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .preview-title {
+        font-size: 15px;
+      }
+
+      .format-row {
+        grid-template-columns:
+          55px
+          55px
+          1fr;
+      }
+
+      .format-row div:nth-child(4) {
+        display: none;
+      }
+
+      .mobile-nav {
+        position: fixed;
+
+        left: 10px;
+        right: 10px;
+
+        bottom:
+          calc(8px + env(safe-area-inset-bottom));
+
+        z-index: 80;
+
+        display: grid;
+
+        grid-template-columns:
+          repeat(4, 1fr);
+
+        padding: 7px;
+
+        border: 1px solid var(--border);
+
+        border-radius: 18px;
+
+        background: rgba(15,18,27,.86);
+
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+
+        box-shadow:
+          0 15px 50px rgba(0,0,0,.35);
+      }
+
+      body.light .mobile-nav {
+        background: rgba(255,255,255,.9);
+      }
+
+      .mobile-nav button {
+        min-height: 48px;
+
+        border: 0;
+        background: transparent;
+
+        color: var(--muted);
+
+        border-radius: 12px;
+
+        font-size: 10px;
+      }
+
+      .mobile-nav button.active {
+        color: var(--text);
+        background: var(--panel-soft);
+      }
+
+      .mobile-nav-icon {
+        display: block;
+        font-size: 17px;
+        margin-bottom: 3px;
+      }
+    }
+
+    /* =========================================================
+       VERY SMALL PHONES
+    ========================================================= */
+
+    @media screen and (max-width: 380px) {
+      .hero h1 {
+        font-size: 34px;
+      }
+
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions .hide-small {
+        display: none;
+      }
+    }
+
+    /* =========================================================
+       LANDSCAPE MOBILE
+    ========================================================= */
+
+    @media screen
+      and (max-height: 500px)
+      and (orientation: landscape) {
+
+      .hero {
+        padding-top: 20px;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+      }
+
+      .preview {
+        max-height: 55vh;
+        aspect-ratio: auto;
+      }
+    }
+
+    /* =========================================================
+       REDUCED MOTION
+    ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =======================================================
+       HEADER
+  ======================================================== -->
+
+  <header class="topbar">
+    <div class="topbar-inner">
+
+      <a
+        class="brand"
+        href="#top"
+        aria-label="vex downloader home"
+      >
+        <div class="brand-icon">⚡</div>
+
+        <div class="brand-text">
+          <div class="brand-title">
+            vex downloader
+          </div>
+
+          <div class="brand-sub">
+            Media intelligence & downloader
+          </div>
+        </div>
+      </a>
+
+      <div class="top-actions">
+
+        <div class="status-line hide-small">
+          <span
+            class="status-dot"
+            id="statusDot"
+          ></span>
+
+          <span
+            class="server-label"
+            id="serverStatus"
+          >
+            Checking API...
+          </span>
+        </div>
+
+        <button
+          class="btn icon-btn"
+          id="themeBtn"
+          title="Toggle theme"
+          aria-label="Toggle theme"
+        >
+          ☾
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+
+  <main
+    class="app"
+    id="top"
+  >
+
+    <div class="container">
+
+      <!-- =====================================================
+           HERO
+      ====================================================== -->
+
+      <section class="hero">
+
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          vex-downloader API Online
+        </div>
+
+        <h1>
+          Download media
+          <span>your way.</span>
+        </h1>
+
+        <p>
+          Inspect supported media, preview metadata, choose
+          quality and format, then download through your
+          vex downloader API.
+        </p>
+
+      </section>
+
+
+      <!-- =====================================================
+           URL INPUT
+      ====================================================== -->
+
+      <section class="url-card">
+
+        <div class="url-row">
+
+          <input
+            id="url"
+            class="url-input"
+            type="url"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Paste a media URL..."
+            aria-label="Media URL"
+          >
+
+          <button
+            class="btn primary"
+            id="inspectBtn"
+          >
+            <span>✦</span>
+            <span>Inspect</span>
+          </button>
+
+        </div>
+
+        <div class="url-hint">
+
+          <span>
+            Paste a supported public media URL
+          </span>
+
+          <span id="dragHint">
+            Drop URL here
+          </span>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           WORKSPACE
+      ====================================================== -->
+
+      <section class="workspace">
+
+        <!-- ===================================================
+             LEFT
+        ==================================================== -->
+
+        <div class="grid">
+
+          <!-- PREVIEW CARD -->
+
+          <section
+            class="card"
+            id="previewCard"
+          >
+
+            <div class="preview">
+
+              <div
+                class="preview-empty"
+                id="previewEmpty"
+              >
+                <div>
+                  <div class="preview-icon">
+                    ◉
+                  </div>
+
+                  <strong>
+                    No media inspected
+                  </strong>
+
+                  <div style="margin-top:5px;font-size:12px">
+                    Paste a URL above to begin
+                  </div>
+                </div>
+              </div>
+
+              <img
+                id="thumbnail"
+                alt=""
+                hidden
+              >
+
+              <div
+                class="preview-gradient"
+                id="previewGradient"
+                hidden
+              ></div>
+
+              <div
+                class="preview-info"
+                id="previewInfo"
+                hidden
+              >
+                <div
+                  class="preview-title"
+                  id="previewTitle"
+                ></div>
+
+                <div
+                  class="preview-channel"
+                  id="previewChannel"
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="card-body">
+
+              <div class="meta-grid">
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Duration
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaDuration"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Resolution
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaResolution"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Views
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaViews"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Likes
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaLikes"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    FPS
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaFps"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Uploaded
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaDate"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Extractor
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaExtractor"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <div class="meta-label">
+                    Media ID
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="metaId"
+                  >
+                    —
+                  </div>
+                </div>
+
+              </div>
+
+              <div
+                class="description"
+                id="description"
+                hidden
+              ></div>
+
+            </div>
+
+          </section>
+
+
+          <!-- FORMATS -->
+
+          <section class="card">
+
+            <div class="card-header">
+
+              <div>
+                <div class="card-title">
+                  Available formats
+                </div>
+
+                <div class="card-subtitle">
+                  Formats reported by yt-dlp
+                </div>
+              </div>
+
+              <span
+                class="eyebrow"
+                id="formatCount"
+              >
+                0
+              </span>
+
+            </div>
+
+            <div class="card-body">
+
+              <div
+                class="formats"
+                id="formats"
+              >
+                <div
+                  style="
+                    color:var(--muted);
+                    font-size:12px;
+                    text-align:center;
+                    padding:25px;
+                  "
+                >
+                  Inspect a URL to see formats.
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- HISTORY -->
+
+          <section class="card history">
+
+            <div class="card-header">
+
+              <div>
+                <div class="card-title">
+                  Recent media
+                </div>
+
+                <div class="card-subtitle">
+                  Stored only in this browser
+                </div>
+              </div>
+
+              <button
+                class="btn small"
+                id="clearHistory"
+              >
+                Clear
+              </button>
+
+            </div>
+
+            <div class="card-body">
+
+              <div
+                class="history-list"
+                id="historyList"
+              >
+                <div
+                  style="
+                    color:var(--muted);
+                    font-size:12px;
+                    text-align:center;
+                    padding:18px;
+                  "
+                >
+                  No recent media.
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+
+        </div>
+
+
+        <!-- ===================================================
+             RIGHT
+        ==================================================== -->
+
+        <aside class="grid">
+
+          <!-- DOWNLOAD OPTIONS -->
+
+          <section class="card">
+
+            <div class="card-header">
+
+              <div>
+                <div class="card-title">
+                  Download
+                </div>
+
+                <div class="card-subtitle">
+                  Configure your output
+                </div>
+              </div>
+
+              <span
+                class="eyebrow"
+                id="mediaBadge"
+              >
+                Video
+              </span>
+
+            </div>
+
+            <div class="card-body">
+
+              <div class="options">
+
+                <div class="field">
+
+                  <label for="type">
+                    Media type
+                  </label>
+
+                  <select id="type">
+                    <option value="video">
+                      Video
+                    </option>
+
+                    <option value="audio">
+                      Audio
+                    </option>
+                  </select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="quality">
+                    Quality
+                  </label>
+
+                  <select id="quality"></select>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="format">
+                    Format
+                  </label>
+
+                  <select id="format"></select>
+
+                </div>
+
+
+                <button
+                  class="download-button"
+                  id="downloadBtn"
+                  disabled
+                >
+                  <span>↓</span>
+                  Download media
+                </button>
+
+              </div>
+
+
+              <!-- PROGRESS -->
+
+              <div class="progress-wrap">
+
+                <div class="progress-head">
+
+                  <span
+                    class="progress-status"
+                    id="progressStatus"
+                  >
+                    Waiting for download
+                  </span>
+
+                  <span
+                    class="progress-number"
+                    id="progressNumber"
+                  >
+                    0%
+                  </span>
+
+                </div>
+
+                <div class="progress-track">
+
+                  <div
+                    class="progress-fill"
+                    id="progressFill"
+                  ></div>
+
+                </div>
+
+              </div>
+
+
+              <!-- COMPLETED -->
+
+              <div
+                class="completed"
+                id="completed"
+              >
+
+                <div class="completed-title">
+                  ✓ Download ready
+                </div>
+
+                <div
+                  class="completed-file"
+                  id="completedFile"
+                ></div>
+
+                <div
+                  style="
+                    display:flex;
+                    gap:7px;
+                    margin-top:10px;
+                  "
+                >
+
+                  <a
+  class="btn small primary"
+  id="downloadFile"
+  href="#"
+  download
+>
+  Download file
+</a>
+                  <button
+                    class="btn small danger"
+                    id="cancelBtn"
+                    hidden
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- QUICK ACTIONS -->
+
+          <section class="card">
+
+            <div class="card-header">
+
+              <div>
+                <div class="card-title">
+                  Quick actions
+                </div>
+
+                <div class="card-subtitle">
+                  Handy tools
+                </div>
+              </div>
+
+            </div>
+
+            <div class="card-body">
+
+              <div
+                style="
+                  display:grid;
+                  grid-template-columns:1fr 1fr;
+                  gap:8px;
+                "
+              >
+
+                <button
+                  class="btn small"
+                  id="pasteBtn"
+                >
+                  📋 Paste
+                </button>
+
+                <button
+                  class="btn small"
+                  id="shareBtn"
+                >
+                  ↗ Share
+                </button>
+
+                <button
+                  class="btn small"
+                  id="copyApiBtn"
+                >
+                  API URL
+                </button>
+
+                <button
+                  class="btn small"
+                  id="healthBtn"
+                >
+                  Health
+                </button>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- API INFO -->
+
+          <section class="card">
+
+            <div class="card-header">
+
+              <div>
+                <div class="card-title">
+                  API
+                </div>
+
+                <div class="card-subtitle">
+                  Current backend
+                </div>
+              </div>
+
+            </div>
+
+            <div class="card-body">
+
+              <div class="meta-grid">
+
+                <div class="meta-item">
+
+                  <div class="meta-label">
+                    Base URL
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="apiBase"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+                <div class="meta-item">
+
+                  <div class="meta-label">
+                    Version
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="apiVersion"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+                <div class="meta-item">
+
+                  <div class="meta-label">
+                    Active jobs
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="apiActive"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+                <div class="meta-item">
+
+                  <div class="meta-label">
+                    Queue
+                  </div>
+
+                  <div
+                    class="meta-value"
+                    id="apiQueue"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </aside>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <!-- =======================================================
+       MOBILE NAV
+  ======================================================== -->
+
+  <nav class="mobile-nav">
+
+    <button
+      class="active"
+      data-scroll="top"
+    >
+      <span class="mobile-nav-icon">⌂</span>
+      Home
+    </button>
+
+    <button data-scroll="previewCard">
+      <span class="mobile-nav-icon">◉</span>
+      Media
+    </button>
+
+    <button data-scroll="formats">
+      <span class="mobile-nav-icon">▦</span>
+      Formats
+    </button>
+
+    <button data-scroll="historyList">
+      <span class="mobile-nav-icon">↺</span>
+      History
+    </button>
+
+  </nav>
+
+
+  <!-- =======================================================
+       TOASTS
+  ======================================================== -->
+
+  <div
+    class="toast-container"
+    id="toastContainer"
+  ></div>
+
+
+  <script>
+    /* =========================================================
+       CONFIG
+    ========================================================= */
+
+    const API = window.location.origin;
+
+    const $ = id =>
+      document.getElementById(id);
+
+
+    /* =========================================================
+       STATE
+    ========================================================= */
+
+    let currentMedia = null;
+    let currentEventSource = null;
+    let currentJobId = null;
+
+    const VIDEO_QUALITIES = [
+      ['best', 'Best available'],
+      ['2160', '2160p • 4K'],
+      ['1440', '1440p • 2K'],
+      ['1080', '1080p • Full HD'],
+      ['720', '720p • HD'],
+      ['480', '480p'],
+      ['360', '360p'],
+      ['240', '240p'],
+      ['144', '144p']
+    ];
+
+    const AUDIO_QUALITIES = [
+      ['best', 'Best audio'],
+      ['320', '320 kbps'],
+      ['256', '256 kbps'],
+      ['192', '192 kbps'],
+      ['160', '160 kbps'],
+      ['128', '128 kbps'],
+      ['96', '96 kbps'],
+      ['64', '64 kbps']
+    ];
+
+
+    /* =========================================================
+       UTILITIES
+    ========================================================= */
+
+    function escapeHTML(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+
+    function formatNumber(value) {
+      if (value == null || value === '') {
+        return '—';
+      }
+
+      const n = Number(value);
+
+      if (!Number.isFinite(n)) {
+        return String(value);
+      }
+
+      return new Intl.NumberFormat().format(n);
+    }
+
+
+    function formatDuration(seconds) {
+      if (seconds == null) {
+        return '—';
+      }
+
+      const total = Math.max(
+        0,
+        Math.round(Number(seconds))
+      );
+
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+
+      if (h) {
+        return `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+      }
+
+      return `${m}m ${String(s).padStart(2, '0')}s`;
+    }
+
+
+    function formatBytes(bytes) {
+      if (!Number.isFinite(Number(bytes))) {
+        return '—';
+      }
+
+      const n = Number(bytes);
+
+      if (n < 1024) {
+        return `${n} B`;
+      }
+
+      if (n < 1024 ** 2) {
+        return `${(n / 1024).toFixed(1)} KB`;
+      }
+
+      if (n < 1024 ** 3) {
+        return `${(n / 1024 ** 2).toFixed(1)} MB`;
+      }
+
+      return `${(n / 1024 ** 3).toFixed(2)} GB`;
+    }
+
+
+    function formatDate(value) {
+      if (!value) {
+        return '—';
+      }
+
+      if (/^\d{8}$/.test(String(value))) {
+        const s = String(value);
+
+        return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+      }
+
+      return String(value);
+    }
+
+
+    function toast(message) {
+      const box = document.createElement('div');
+
+      box.className = 'toast';
+
+      box.textContent = message;
+
+      $('toastContainer').appendChild(box);
+
+      setTimeout(() => {
+        box.remove();
+      }, 3500);
+    }
+
+
+    async function api(path, options = {}) {
+      const response = await fetch(
+        `${API}${path}`,
+        options
+      );
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          `API returned HTTP ${response.status}`
+        );
+      }
+
+      if (!response.ok || data.success === false) {
+        throw new Error(
+          data.error ||
+          `Request failed (${response.status})`
+        );
+      }
+
+      return data;
+    }
+
+
+    /* =========================================================
+       API HEALTH
+    ========================================================= */
+
+    async function checkHealth() {
+      try {
+        const data = await api('/health');
+
+        $('statusDot').className =
+          'status-dot online';
+
+        $('serverStatus').textContent =
+          'API online';
+
+        $('apiBase').textContent =
+          API;
+
+        $('apiVersion').textContent =
+          data.version ?? '—';
+
+        $('apiActive').textContent =
+          data.active ?? '0';
+
+        $('apiQueue').textContent =
+          data.queued ?? '0';
+
+      } catch (error) {
+
+        $('statusDot').className =
+          'status-dot offline';
+
+        $('serverStatus').textContent =
+          'API offline';
+
+        toast(error.message);
+      }
+    }
+
+
+    /* =========================================================
+       FORM OPTIONS
+    ========================================================= */
+
+    function updateOptions() {
+      const type = $('type').value;
+
+      $('mediaBadge').textContent =
+        type === 'video'
+          ? 'Video'
+          : 'Audio';
+
+      const qualities =
+        type === 'video'
+          ? VIDEO_QUALITIES
+          : AUDIO_QUALITIES;
+
+      $('quality').innerHTML =
+        qualities
+          .map(
+            ([value, label]) =>
+              `<option value="${value}">${label}</option>`
+          )
+          .join('');
+
+      const formats =
+        type === 'video'
+          ? [
+              ['mp4', 'MP4'],
+              ['webm', 'WebM']
+            ]
+          : [
+              ['mp3', 'MP3'],
+              ['m4a', 'M4A']
+            ];
+
+      $('format').innerHTML =
+        formats
+          .map(
+            ([value, label]) =>
+              `<option value="${value}">${label}</option>`
+          )
+          .join('');
+    }
+
+
+    /* =========================================================
+       INSPECT
+    ========================================================= */
+
+    async function inspect() {
+      const url =
+        $('url').value.trim();
+
+      if (!url) {
+        toast('Paste a media URL first.');
+        $('url').focus();
+        return;
+      }
+
+      const button =
+        $('inspectBtn');
+
+      button.disabled = true;
+      button.innerHTML = '⏳ Inspecting...';
+
+      try {
+        const data = await api(
+          '/v1/info',
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body: JSON.stringify({
+              url
+            })
+          }
+        );
+
+        currentMedia = data.data;
+
+        renderMedia(currentMedia);
+
+        saveHistory(currentMedia, url);
+
+        toast('Media inspected successfully.');
+
+      } catch (error) {
+        toast(error.message);
+
+      } finally {
+        button.disabled = false;
+        button.innerHTML =
+          '<span>✦</span><span>Inspect</span>';
+      }
+    }
+
+
+    /* =========================================================
+       RENDER MEDIA
+    ========================================================= */
+
+    function renderMedia(data) {
+      const title =
+        data.title ||
+        'Untitled media';
+
+      $('previewEmpty').hidden = true;
+
+      if (data.thumbnail) {
+        $('thumbnail').src =
+          data.thumbnail;
+
+        $('thumbnail').hidden = false;
+
+        $('previewGradient').hidden =
+          false;
+
+        $('previewInfo').hidden =
+          false;
+      }
+
+      $('previewTitle').textContent =
+        title;
+
+      $('previewChannel').textContent =
+        [
+          data.uploader,
+          data.channel
+        ]
+          .filter(Boolean)
+          .filter(
+            (v, i, arr) =>
+              arr.indexOf(v) === i
+          )
+          .join(' • ');
+
+      $('metaDuration').textContent =
+        formatDuration(data.duration);
+
+      $('metaResolution').textContent =
+        data.width && data.height
+          ? `${data.width} × ${data.height}`
+          : '—';
+
+      $('metaViews').textContent =
+        formatNumber(data.view_count);
+
+      $('metaLikes').textContent =
+        formatNumber(data.like_count);
+
+      $('metaFps').textContent =
+        data.fps
+          ? `${data.fps} FPS`
+          : '—';
+
+      $('metaDate').textContent =
+        formatDate(data.upload_date);
+
+      $('metaExtractor').textContent =
+        data.extractor || '—';
+
+      $('metaId').textContent =
+        data.id || '—';
+
+      if (data.description) {
+        $('description').hidden = false;
+
+        $('description').textContent =
+          data.description;
+      } else {
+        $('description').hidden = true;
+      }
+
+      $('downloadBtn').disabled =
+        false;
+
+      renderFormats(data.formats || []);
+
+      $('previewCard').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+
+    /* =========================================================
+       FORMATS
+    ========================================================= */
+
+    function renderFormats(formats) {
+      $('formatCount').textContent =
+        formats.length;
+
+      if (!formats.length) {
+        $('formats').innerHTML =
+          `<div style="
+            color:var(--muted);
+            font-size:12px;
+            text-align:center;
+            padding:25px;
+          ">
+            No format information reported.
+          </div>`;
+
+        return;
+      }
+
+      $('formats').innerHTML =
+        formats
+          .slice(0, 100)
+          .map(format => {
+
+            const resolution =
+              format.resolution ||
+              (
+                format.width &&
+                format.height
+                  ? `${format.width}×${format.height}`
+                  : '—'
+              );
+
+            const size =
+              format.filesize
+                ? formatBytes(format.filesize)
+                : '—';
+
+            return `
+              <div class="format-row">
+
+                <strong>
+                  ${escapeHTML(format.id || '—')}
+                </strong>
+
+                <div>
+                  ${escapeHTML(format.ext || '—')}
+                </div>
+
+                <div>
+                  ${escapeHTML(resolution)}
+                </div>
+
+                <div>
+                  ${escapeHTML(size)}
+                </div>
+
+              </div>
+            `;
+          })
+          .join('');
+    }
+
+
+    /* =========================================================
+       DOWNLOAD
+    ========================================================= */
+
+    async function downloadMedia() {
+      if (!currentMedia) {
+        toast('Inspect a media URL first.');
+        return;
+      }
+
+      if (currentEventSource) {
+        currentEventSource.close();
+        currentEventSource = null;
+      }
+
+      const button =
+        $('downloadBtn');
+
+      const type =
+        $('type').value;
+
+      const quality =
+        $('quality').value;
+
+      const format =
+        $('format').value;
+
+      button.disabled = true;
+
+      button.textContent =
+        'Starting...';
+
+      $('completed').classList.remove(
+        'show'
+      );
+
+      setProgress(
+        0,
+        'Creating download job'
+      );
+
+      try {
+        const data = await api(
+          '/v1/download',
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body: JSON.stringify({
+              url: $('url').value.trim(),
+              type,
+              quality,
+              format
+            })
+          }
+        );
+
+        currentJobId =
+          data.data.id;
+
+        $('cancelBtn').hidden =
+          false;
+
+        $('progressStatus').textContent =
+          data.data.status || 'queued';
+
+        listenToJob(currentJobId);
+
+        toast('Download queued.');
+
+      } catch (error) {
+        toast(error.message);
+
+        button.disabled = false;
+
+        button.textContent =
+          '↓ Download media';
+      }
+    }
+
+
+    /* =========================================================
+       SSE
+    ========================================================= */
+
+    function listenToJob(id) {
+      const url =
+        `${API}/v1/jobs/${encodeURIComponent(id)}/events`;
+
+      const events =
+        new EventSource(url);
+
+      currentEventSource =
+        events;
+
+      events.onmessage = event => {
+
+        try {
+          const data =
+            JSON.parse(event.data);
+
+          const progress =
+            Number(data.progress || 0);
+
+          setProgress(
+            progress,
+            data.type || 'working'
+          );
+
+          if (data.type === 'metadata') {
+
+            if (data.thumbnail) {
+              $('thumbnail').src =
+                data.thumbnail;
+
+              $('thumbnail').hidden =
+                false;
+            }
+
+            if (data.title) {
+              $('previewTitle').textContent =
+                data.title;
+            }
+          }
+
+          if (data.type === 'completed') {
+
+            setProgress(
+              100,
+              'Download complete'
+            );
+
+            $('completed').classList.add(
+              'show'
+            );
+
+            $('completedFile').textContent =
+              [
+                data.fileName,
+                data.size
+                  ? formatBytes(data.size)
+                  : ''
+              ]
+                .filter(Boolean)
+                .join(' • ');
+
+            const downloadLink = $('downloadFile');
+
+downloadLink.href =
+  `${API}/v1/jobs/${encodeURIComponent(id)}/file`;
+
+if (data.fileName) {
+  downloadLink.download = data.fileName;
+}
+
+            $('cancelBtn').hidden =
+              true;
+
+            $('downloadBtn').disabled =
+              false;
+
+            $('downloadBtn').textContent =
+              '↓ Download again';
+
+            events.close();
+
+            currentEventSource = null;
+
+            toast('Your download is ready.');
+
+            checkHealth();
+          }
+
+          if (data.type === 'failed') {
+
+            setProgress(
+              progress,
+              `Failed: ${data.error || 'Unknown error'}`
+            );
+
+            $('cancelBtn').hidden =
+              true;
+
+            $('downloadBtn').disabled =
+              false;
+
+            $('downloadBtn').textContent =
+              '↓ Try again';
+
+            events.close();
+
+            currentEventSource = null;
+
+            toast(
+              data.error ||
+              'Download failed.'
+            );
+          }
+
+          if (data.type === 'cancelled') {
+
+            setProgress(
+              0,
+              'Download cancelled'
+            );
+
+            $('cancelBtn').hidden =
+              true;
+
+            $('downloadBtn').disabled =
+              false;
+
+            $('downloadBtn').textContent =
+              '↓ Download media';
+
+            events.close();
+
+            currentEventSource = null;
+
+            toast('Download cancelled.');
+          }
+
+        } catch {
+          // Ignore malformed SSE event.
+        }
+      };
+
+      events.onerror = () => {
+        if (
+          currentEventSource === events
+        ) {
+          /*
+           * EventSource automatically reconnects.
+           * Keep it alive unless the job already ended.
+           */
+          $('progressStatus').textContent =
+            'Connection interrupted — reconnecting...';
+        }
+      };
+    }
+
+
+    /* =========================================================
+       PROGRESS
+    ========================================================= */
+
+    function setProgress(
+      value,
+      status
+    ) {
+      const n = Math.max(
+        0,
+        Math.min(100, Number(value) || 0)
+      );
+
+      $('progressFill').style.width =
+        `${n}%`;
+
+      $('progressNumber').textContent =
+        `${Math.round(n)}%`;
+
+      $('progressStatus').textContent =
+        status;
+    }
+
+
+    /* =========================================================
+       CANCEL
+    ========================================================= */
+
+    async function cancelDownload() {
+      if (!currentJobId) {
+        return;
+      }
+
+      try {
+        await api(
+          `/v1/jobs/${encodeURIComponent(currentJobId)}`,
+          {
+            method: 'DELETE'
+          }
+        );
+
+        toast('Cancellation requested.');
+
+      } catch (error) {
+        toast(error.message);
+      }
+    }
+
+
+    /* =========================================================
+       HISTORY
+    ========================================================= */
+
+    function getHistory() {
+      try {
+        return JSON.parse(
+          localStorage.getItem(
+            'vex-downloader-history'
+          ) || '[]'
+        );
+      } catch {
+        return [];
+      }
+    }
+
+
+    function saveHistory(media, url) {
+      if (!media) {
+        return;
+      }
+
+      let history =
+        getHistory();
+
+      const item = {
+        id: media.id || cryptoRandom(),
+        title: media.title || 'Untitled',
+        thumbnail: media.thumbnail || '',
+        url,
+        time: Date.now()
+      };
+
+      history = [
+        item,
+        ...history.filter(
+          x => x.url !== url
+        )
+      ].slice(0, 20);
+
+      localStorage.setItem(
+        'vex-downloader-history',
+        JSON.stringify(history)
+      );
+
+      renderHistory();
+    }
+
+
+    function cryptoRandom() {
+      return (
+        Date.now().toString(36) +
+        Math.random()
+          .toString(36)
+          .slice(2)
+      );
+    }
+
+
+    function renderHistory() {
+      const history =
+        getHistory();
+
+      if (!history.length) {
+        $('historyList').innerHTML =
+          `<div style="
+            color:var(--muted);
+            font-size:12px;
+            text-align:center;
+            padding:18px;
+          ">
+            No recent media.
+          </div>`;
+
+        return;
+      }
+
+      $('historyList').innerHTML =
+        history
+          .map(item => `
+            <div
+              class="history-item"
+              data-url="${escapeHTML(item.url)}"
+            >
+
+              ${
+                item.thumbnail
+                  ? `<img
+                      class="history-thumb"
+                      src="${escapeHTML(item.thumbnail)}"
+                      alt=""
+                      loading="lazy"
+                    >`
+                  : `<div class="history-thumb"></div>`
+              }
+
+              <div style="min-width:0">
+
+                <div class="history-title">
+                  ${escapeHTML(item.title)}
+                </div>
+
+                <div class="history-time">
+                  ${new Date(item.time).toLocaleString()}
+                </div>
+
+              </div>
+
+              <button
+                class="btn small"
+                data-history-url="${escapeHTML(item.url)}"
+              >
+                Open
+              </button>
+
+            </div>
+          `)
+          .join('');
+    }
+
+
+    function clearHistory() {
+      localStorage.removeItem(
+        'vex-downloader-history'
+      );
+
+      renderHistory();
+
+      toast('History cleared.');
+    }
+
+
+    /* =========================================================
+       CLIPBOARD
+    ========================================================= */
+
+    async function pasteURL() {
+      try {
+        const text =
+          await navigator.clipboard.readText();
+
+        if (!text) {
+          toast('Clipboard is empty.');
+          return;
+        }
+
+        $('url').value =
+          text.trim();
+
+        toast('URL pasted.');
+
+      } catch {
+        toast(
+          'Clipboard permission was denied.'
+        );
+      }
+    }
+
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(
+          text
+        );
+
+        toast('Copied to clipboard.');
+
+      } catch {
+        toast('Could not copy.');
+      }
+    }
+
+
+    /* =========================================================
+       SHARE
+    ========================================================= */
+
+    async function sharePage() {
+      const shareData = {
+        title: 'vex downloader',
+        text: currentMedia?.title
+          ? `Check out: ${currentMedia.title}`
+          : 'vex downloader',
+        url: location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(
+            shareData
+          );
+        } catch {
+          // User cancelled share.
+        }
+
+        return;
+      }
+
+      copyText(location.href);
+    }
+
+
+    /* =========================================================
+       THEME
+    ========================================================= */
+
+    function loadTheme() {
+      const theme =
+        localStorage.getItem(
+          'vex-downloader-theme'
+        );
+
+      if (theme === 'light') {
+        document.body.classList.add(
+          'light'
+        );
+
+        $('themeBtn').textContent =
+          '☀';
+      }
+    }
+
+
+    function toggleTheme() {
+      const light =
+        document.body.classList.toggle(
+          'light'
+        );
+
+      localStorage.setItem(
+        'vex-downloader-theme',
+        light
+          ? 'light'
+          : 'dark'
+      );
+
+      $('themeBtn').textContent =
+        light
+          ? '☀'
+          : '☾';
+    }
+
+
+    /* =========================================================
+       DRAG / DROP
+    ========================================================= */
+
+    document.addEventListener(
+      'dragover',
+      event => {
+        event.preventDefault();
+      }
+    );
+
+    document.addEventListener(
+      'drop',
+      event => {
+        event.preventDefault();
+
+        const text =
+          event.dataTransfer?.getData(
+            'text'
+          );
+
+        if (text) {
+          $('url').value =
+            text.trim();
+
+          toast(
+            'URL dropped. Press Inspect.'
+          );
+        }
+      }
+    );
+
+
+    /* =========================================================
+       EVENTS
+    ========================================================= */
+
+    $('inspectBtn')
+      .addEventListener(
+        'click',
+        inspect
+      );
+
+    $('downloadBtn')
+      .addEventListener(
+        'click',
+        downloadMedia
+      );
+
+    $('cancelBtn')
+      .addEventListener(
+        'click',
+        cancelDownload
+      );
+
+    $('themeBtn')
+      .addEventListener(
+        'click',
+        toggleTheme
+      );
+
+    $('type')
+      .addEventListener(
+        'change',
+        updateOptions
+      );
+
+    $('pasteBtn')
+      .addEventListener(
+        'click',
+        pasteURL
+      );
+
+    $('shareBtn')
+      .addEventListener(
+        'click',
+        sharePage
+      );
+
+    $('copyApiBtn')
+      .addEventListener(
+        'click',
+        () =>
+          copyText(
+            `${API}/v1/download`
+          )
+      );
+
+    $('healthBtn')
+      .addEventListener(
+        'click',
+        checkHealth
+      );
+
+    $('clearHistory')
+      .addEventListener(
+        'click',
+        clearHistory
+      );
+
+
+    /* =========================================================
+       ENTER KEY
+    ========================================================= */
+
+    $('url')
+      .addEventListener(
+        'keydown',
+        event => {
+          if (
+            event.key === 'Enter'
+          ) {
+            inspect();
+          }
+        }
+      );
+
+
+    /* =========================================================
+       HISTORY CLICK
+    ========================================================= */
+
+    $('historyList')
+      .addEventListener(
+        'click',
+        event => {
+
+          const button =
+            event.target.closest(
+              '[data-history-url]'
+            );
+
+          if (!button) {
+            return;
+          }
+
+          $('url').value =
+            button.dataset.historyUrl;
+
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+
+          inspect();
+        }
+      );
+
+
+    /* =========================================================
+       MOBILE NAV
+    ========================================================= */
+
+    document
+      .querySelectorAll(
+        '[data-scroll]'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            const target =
+              $(button.dataset.scroll);
+
+            if (target) {
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+
+            document
+              .querySelectorAll(
+                '.mobile-nav button'
+              )
+              .forEach(
+                b => b.classList.remove(
+                  'active'
+                )
+              );
+
+            button.classList.add(
+              'active'
+            );
+          }
+        );
+      });
+
+
+    /* =========================================================
+       INITIALIZATION
+    ========================================================= */
+
+    updateOptions();
+    renderHistory();
+    loadTheme();
+
+    if (typeof document !== 'undefined') {
+      checkHealth();
+    }
+
+  </script>
+
+</body>
+</html>

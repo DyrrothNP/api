@@ -1,0 +1,4 @@
+import fs from 'node:fs';
+const a=process.argv.slice(2),url=a.at(-1),dump=a.includes('--dump-single-json');
+if(dump){const duration=url.includes('long')?9999:10;console.log(JSON.stringify({id:'fake',title:'Fake Test Video',uploader:'Tester',channel:'Tester',duration,extractor:'generic',thumbnail:null,formats:[{format_id:'1',ext:'mp4',height:720,width:1280,vcodec:'h264',acodec:'aac'}]}));process.exit(0)}
+if(url.includes('cancel')){setInterval(()=>console.log('[download] 1%'),100)}else{const oi=a.indexOf('-o'),template=oi>=0?a[oi+1]:'media.%(ext)s',out=template.replace('%(ext)s','mp4');console.log('[download] 50%');setTimeout(()=>{fs.mkdirSync(out.slice(0,out.lastIndexOf('/')),{recursive:true});fs.writeFileSync(out,Buffer.alloc(url.includes('big')?200000:10,65));console.log('[download] 100%')},50);setTimeout(()=>process.exit(0),100)}

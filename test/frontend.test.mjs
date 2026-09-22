@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+test('frontend script parses',()=>{const s=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');assert.match(s,/\/v1\/info/);assert.match(s,/\/v1\/download/);assert.match(s,/EventSource/);vm.runInNewContext(s.match(/<script>([\s\S]*?)<\/script>/)[1],{console,fetch:()=>{},EventSource:function(){}})});

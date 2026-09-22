@@ -1,0 +1,8 @@
+node_modules/
+.env
+storage/downloads/*
+storage/jobs/*
+storage/tmp/*
+!storage/downloads/.gitkeep
+!storage/jobs/.gitkeep
+!storage/tmp/.gitkeep

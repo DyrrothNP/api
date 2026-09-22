@@ -1,0 +1,6 @@
+import path from 'node:path';
+import fs from 'node:fs';
+const envFile=path.resolve(process.cwd(),'.env');
+if(fs.existsSync(envFile)) for(const line of fs.readFileSync(envFile,'utf8').split(/\r?\n/)){const m=line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);if(m&&process.env[m[1]]===undefined)process.env[m[1]]=m[2].replace(/^['"]|['"]$/g,'');}
+const num=(k,d,min)=>{const n=Number(process.env[k]??d);return Number.isFinite(n)&&n>=min?n:d};
+export const config=Object.freeze({version:'3.3.0',nodeEnv:process.env.NODE_ENV||'development',root:path.resolve(process.cwd()),host:process.env.HOST||'0.0.0.0',port:num('PORT',8082,1),corsOrigins:process.env.CORS_ORIGINS||'*',apiKey:process.env.API_KEY||'',maxConcurrent:num('MAX_CONCURRENT_JOBS',2,1),maxQueue:num('MAX_QUEUE_SIZE',25,0),jobTtl:num('JOB_TTL_MS',1800000,1000),downloadTtl:num('DOWNLOAD_TTL_MS',900000,1000),maxBytes:num('MAX_DOWNLOAD_BYTES',2147483648,1),maxDuration:num('MAX_DURATION_SECONDS',7200,1),processTimeout:num('PROCESS_TIMEOUT_MS',1800000,1000),rateWindow:num('RATE_LIMIT_WINDOW_MS',60000,1),rateMax:num('RATE_LIMIT_MAX',60,1),ytDlp:process.env.YT_DLP_BIN||'yt-dlp',ffmpeg:process.env.FFMPEG_BIN||'ffmpeg',cookiesFile:process.env.COOKIES_FILE||'',ytDlpScript:process.env.YT_DLP_SCRIPT||''});
