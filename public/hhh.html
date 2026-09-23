@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101318">
+<title>Vex — Media downloader</title>
+<style>
+:root{--bg:#101318;--panel:#171b21;--panel2:#1c2128;--line:#2a3038;--text:#f1f3f5;--muted:#929aa5;--soft:#c8cdd3;--accent:#d9ff63;--danger:#ff7777;--shadow:0 14px 38px rgba(0,0,0,.22)}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer}
+.shell{width:min(980px,calc(100% - 32px));margin:auto}.top{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #20252c}.brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.03em;font-size:19px}.mark{width:25px;height:25px;border:2px solid var(--accent);display:grid;place-items:center;border-radius:7px;transform:rotate(-6deg)}.mark i{display:block;width:8px;height:8px;background:var(--accent);border-radius:2px}.top-actions{display:flex;gap:8px}.quiet{border:0;background:transparent;color:var(--muted);padding:8px 10px}.quiet:hover{color:var(--text)}
+main{padding:54px 0 80px}.intro{max-width:680px;margin-bottom:27px}.eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:10px}.intro h1{font-size:clamp(34px,6vw,56px);line-height:1.02;letter-spacing:-.055em;margin:0 0 13px;font-weight:760}.intro p{color:var(--muted);margin:0;font-size:16px;max-width:560px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.input-card{padding:10px}.url-row{display:flex;gap:8px}.url-row input{min-width:0;flex:1;background:#101318;border:1px solid #30363f;border-radius:9px;color:var(--text);padding:15px 14px;outline:none}.url-row input:focus{border-color:#6f7884;box-shadow:0 0 0 3px rgba(255,255,255,.035)}.primary{background:var(--accent);color:#11150b;border:0;border-radius:9px;font-weight:760;padding:0 20px;min-width:108px}.primary:hover{filter:brightness(.94)}.primary:disabled{opacity:.45;cursor:default}.hint{padding:8px 5px 1px;color:#727b86;font-size:12px}
+.preview{display:none;margin-top:14px;overflow:hidden}.preview.show{display:block}.preview-inner{display:flex;gap:16px;padding:16px}.thumb{width:156px;aspect-ratio:16/9;background:#0d1014;border-radius:8px;object-fit:cover;flex:none}.preview-copy{min-width:0}.preview-copy h2{margin:1px 0 7px;font-size:18px;line-height:1.25;letter-spacing:-.02em}.meta{color:var(--muted);font-size:13px}.subtle{color:var(--soft)}
+.options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px 16px}.field label{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px}.field select{width:100%;border:1px solid var(--line);background:#101318;color:var(--text);padding:11px 10px;border-radius:8px;outline:none}.action-row{display:flex;justify-content:flex-end;padding:0 16px 16px}.download-btn{min-height:42px}.status-card{display:none;margin-top:14px;padding:18px}.status-card.show{display:block}.status-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.status-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}.status-title{margin-top:3px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.percent{font-size:18px;font-weight:750}.track{height:5px;background:#2a3037;border-radius:99px;overflow:hidden;margin:18px 0 10px}.fill{height:100%;width:0;background:var(--accent);transition:width .2s ease}.stats{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.status-error{color:var(--danger);margin-top:10px}.status-actions{display:flex;gap:8px;margin-top:16px}.secondary{border:1px solid var(--line);background:#20252c;color:var(--text);border-radius:8px;padding:9px 13px}.secondary:hover{background:#272d35}.success{border-color:#405126}.success a{color:var(--accent);text-decoration:none;font-weight:700}
+.recent{margin-top:38px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.section-head h3{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0}.clear{border:0;background:transparent;color:#727b86;font-size:12px}.clear:hover{color:var(--text)}.history{display:grid;gap:7px}.history-empty{color:#69727d;font-size:13px;padding:10px 0}.history-item{display:flex;align-items:center;gap:12px;padding:11px 12px;background:#15191f;border:1px solid #222831;border-radius:10px}.history-icon{width:34px;height:34px;border-radius:7px;background:#20252c;display:grid;place-items:center;color:#aab2bb;font-size:13px}.history-copy{min-width:0;flex:1}.history-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-meta{font-size:12px;color:var(--muted);margin-top:2px}.history-open{color:#aeb5bd;text-decoration:none;font-size:12px}.history-open:hover{color:var(--text)}
+.footer{margin-top:48px;padding-top:16px;border-top:1px solid #20252c;color:#68717c;font-size:12px;display:flex;justify-content:space-between}.kbd{border:1px solid #30363f;background:#171b21;padding:1px 5px;border-radius:4px;color:#8e97a1}
+.toast{position:fixed;right:18px;bottom:18px;max-width:min(360px,calc(100% - 36px));background:#222831;border:1px solid #343b45;color:var(--text);padding:11px 13px;border-radius:9px;box-shadow:var(--shadow);display:none;font-size:13px}.toast.show{display:block}
+@media(max-width:640px){.shell{width:min(100% - 22px,980px)}.top{height:62px}main{padding-top:36px}.intro h1{font-size:39px}.url-row{display:block}.url-row input{width:100%;display:block}.primary{width:100%;height:44px;margin-top:8px}.options{grid-template-columns:1fr 1fr}.options .field:last-child{grid-column:1/-1}.preview-inner{padding:13px}.thumb{width:112px}.action-row{padding-top:0}.download-btn{width:100%}.status-top{gap:10px}.footer{display:block}.footer span{display:block;margin-bottom:5px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true"><i></i></span> Cobalt</div>
+  <div class="top-actions"><button class="quiet" id="docsBtn" type="button">API</button></div>
+</header>
+
+<main>
+<section class="intro">
+  <div class="eyebrow">Media utility</div>
+  <h1>Download a link.<br>Keep the file.</h1>
+  <p>Paste a public media URL and choose how you want the result. Vex handles the inspection, conversion and download for you.</p>
+</section>
+
+<section class="card input-card">
+  <div class="url-row">
+    <input id="url" autocomplete="url" spellcheck="false" placeholder="Paste a media URL" aria-label="Media URL">
+    <button class="primary" id="infoBtn" type="button">Check link</button>
+  </div>
+  <div class="hint">Tip: paste with <span class="kbd">Ctrl</span> + <span class="kbd">V</span>, then press Enter.</div>
+</section>
+
+<section class="card preview" id="preview" aria-live="polite">
+  <div class="preview-inner">
+    <img class="thumb" id="thumb" alt="">
+    <div class="preview-copy">
+      <h2 id="title">Media</h2>
+      <div class="meta" id="meta"></div>
+    </div>
+  </div>
+  <div class="options">
+    <div class="field"><label for="type">Kind</label><select id="type"><option value="video">Video</option><option value="audio">Audio</option></select></div>
+    <div class="field"><label for="quality">Quality</label><select id="quality"><option value="best">Best available</option></select></div>
+    <div class="field"><label for="format">Format</label><select id="format"><option value="mp4">MP4</option><option value="webm">WebM</option><option value="mp3">MP3</option><option value="m4a">M4A</option></select></div>
+  </div>
+  <div class="action-row"><button class="primary download-btn" id="downloadBtn" type="button">Download file</button></div>
+</section>
+
+<section class="card status-card" id="statusCard" aria-live="polite">
+  <div class="status-top"><div><div class="status-label" id="statusLabel">Preparing</div><div class="status-title" id="statusTitle">Waiting for the download</div></div><div class="percent" id="percent">0%</div></div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="stats"><span id="statusDetail">Queued</span><span id="sizeDetail"></span></div>
+  <div class="status-error" id="statusError"></div>
+  <div class="status-actions" id="statusActions"><button class="secondary" id="cancelBtn" type="button">Cancel</button></div>
+</section>
+
+<section class="recent">
+  <div class="section-head"><h3>Recent downloads</h3><button class="clear" id="clearHistory" type="button">Clear</button></div>
+  <div class="history" id="history"><div class="history-empty">Completed downloads will appear here on this device.</div></div>
+</section>
+
+<footer class="footer"><span>Runs on your Vex API.</span><span>Public URLs only · Files expire according to server settings.</span></footer>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const state={job:null,eventSource:null,info:null};
+const HISTORY_KEY='cobalt.downloads.v1';
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2800)}
+function fmtDuration(v){if(v==null||!Number.isFinite(Number(v)))return '';let n=Math.round(Number(v));let h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=n%60;return h?`${h}h ${m}m`:`${m}m ${String(s).padStart(2,'0')}s`}
+function fmtBytes(v){if(v==null||!Number.isFinite(Number(v)))return '';let n=Number(v),u=['B','KB','MB','GB'],i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return `${n<10&&i?n.toFixed(1):Math.round(n)} ${u[i]}`}
+function saveHistory(item){let h=[];try{h=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch{};h=[item,...h.filter(x=>x.id!==item.id)].slice(0,8);localStorage.setItem(HISTORY_KEY,JSON.stringify(h));renderHistory()}
+function renderHistory(){let h=[];try{h=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch{};const box=$('history');if(!h.length){box.innerHTML='<div class="history-empty">Completed downloads will appear here on this device.</div>';return}box.innerHTML=h.map(x=>`<div class="history-item"><div class="history-icon">↓</div><div class="history-copy"><div class="history-title">${esc(x.title||'Untitled')}</div><div class="history-meta">${esc((x.format||'file').toUpperCase())}${x.quality&&x.quality!=='best'?' · '+esc(x.quality)+'p':''}${x.size?' · '+esc(fmtBytes(x.size)):''}</div></div><a class="history-open" href="${esc('/v1/jobs/'+encodeURIComponent(x.id)+'/file')}" target="_blank" rel="noopener">Open</a></div>`).join('')}
+function setStatus(label,title,progress,detail='',size=''){ $('statusCard').classList.add('show');$('statusLabel').textContent=label;$('statusTitle').textContent=title||'Media';$('percent').textContent=Math.round(progress||0)+'%';$('fill').style.width=Math.max(0,Math.min(100,progress||0))+'%';$('statusDetail').textContent=detail;$('sizeDetail').textContent=size;$('statusError').textContent='';}
+function setQualities(type){const q=$('quality');const values=type==='audio'?['best','64','96','128','160','192','256','320']:['best','2160','1440','1080','720','480','360'];q.innerHTML=values.map(v=>`<option value="${v}">${v==='best'?'Best available':type==='audio'?v+' kbps':v+'p'}</option>`).join('')}
+async function info(){const url=$('url').value.trim();if(!url){toast('Paste a URL first.');$('url').focus();return}$('infoBtn').disabled=true;$('infoBtn').textContent='Checking…';$('preview').classList.remove('show');try{const r=await fetch('/v1/info',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url})});const j=await r.json();if(!r.ok||!j.success)throw new Error(j.error||'Could not inspect this link');const d=j.data||{};state.info=d;$('title').textContent=d.title||'Untitled media';const bits=[d.uploader,d.duration!=null?fmtDuration(d.duration):null,d.extractor].filter(Boolean);$('meta').textContent=bits.join(' · ')||'Media information available';const img=$('thumb');if(d.thumbnail){img.src=d.thumbnail;img.style.display='block'}else img.style.display='none';$('preview').classList.add('show');setQualities($('type').value);$('format').value=$('type').value==='audio'?'mp3':'mp4'}catch(e){toast(e.message)}finally{$('infoBtn').disabled=false;$('infoBtn').textContent='Check link'}}
+async function downloadMedia(){if(!state.info){await info();if(!state.info)return}const body={url:$('url').value.trim(),type:$('type').value,quality:$('quality').value,format:$('format').value};$('downloadBtn').disabled=true;$('statusActions').innerHTML='<button class="secondary" id="cancelBtn" type="button">Cancel</button>';setStatus('Starting','Creating your file',0,'Submitting download…');try{const r=await fetch('/v1/download',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok||!j.success)throw new Error(j.error||'Could not start download');state.job=j.data;listen(state.job.id)}catch(e){$('statusLabel').textContent='Could not start';$('statusError').textContent=e.message;$('downloadBtn').disabled=false}}
+function listen(id){if(state.eventSource)state.eventSource.close();const es=new EventSource('/v1/jobs/'+encodeURIComponent(id)+'/events');state.eventSource=es;es.onmessage=e=>{let x;try{x=JSON.parse(e.data)}catch{return}const p=Number(x.progress)||0;const names={queued:['Queued','Waiting for a worker'],started:['Preparing','Getting the media ready'],progress:['Downloading','Downloading media'],completed:['Complete','Your file is ready'],failed:['Failed','The download could not be completed'],cancelled:['Cancelled','Download cancelled']};const n=names[x.type]||['Working','Processing'];setStatus(n[0],state.info?.title||'Media',x.type==='completed'?100:p,x.error||n[1],x.size?fmtBytes(x.size):'');if(x.type==='completed'){es.close();state.eventSource=null;$('statusCard').classList.add('success');$('statusActions').innerHTML=`<a class="secondary" href="/v1/jobs/${encodeURIComponent(id)}/file" target="_blank" rel="noopener">Download file</a>`;$('downloadBtn').disabled=false;saveHistory({id,title:state.info?.title||'Untitled',format:$('format').value,quality:$('quality').value,size:x.size||null})}else if(x.type==='failed'||x.type==='cancelled'){es.close();state.eventSource=null;$('statusError').textContent=x.error||n[1];$('downloadBtn').disabled=false;$('statusActions').innerHTML='<button class="secondary" id="retryBtn" type="button">Try again</button>';$('retryBtn').onclick=downloadMedia}};es.onerror=()=>{if(state.job&&state.job.status==='completed')return};$('cancelBtn').onclick=cancelJob}
+async function cancelJob(){if(!state.job)return;try{await fetch('/v1/jobs/'+encodeURIComponent(state.job.id),{method:'DELETE'});if(state.eventSource){state.eventSource.close();state.eventSource=null}setStatus('Cancelled',state.info?.title||'Media',0,'The job was cancelled.');$('statusActions').innerHTML='<button class="secondary" id="retryBtn" type="button">Try again</button>';$('retryBtn').onclick=downloadMedia;$('downloadBtn').disabled=false}catch{toast('Could not cancel the job.')}}
+if(typeof document!=='undefined'){ $('infoBtn').onclick=info;$('downloadBtn').onclick=downloadMedia;$('url').addEventListener('keydown',e=>{if(e.key==='Enter')info()});$('type').addEventListener('change',()=>{setQualities($('type').value);$('format').value=$('type').value==='audio'?'mp3':'mp4'});$('clearHistory').onclick=()=>{localStorage.removeItem(HISTORY_KEY);renderHistory()};$('docsBtn').onclick=()=>window.open('/docs','_blank');renderHistory(); }
+</script>
+</body>
+</html>
